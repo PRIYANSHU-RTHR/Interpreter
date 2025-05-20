@@ -8,23 +8,56 @@ import (
 	"github.com/r-priyanshu/interpreter/token"
 )
 
+const (
+	_ int = iota // Assign 0 to the blank identifier, so LOWEST starts at 1
+	LOWEST
+	EQUALS
+	LESSGREATER
+	SUM
+	PRODUCT
+	PREFIX
+	CALL
+)
+
 type Parser struct {
 	l *lexer.Lexer
 
 	errors    []string
 	curToken  token.Token
 	peekToken token.Token
+
+	prefixParseFns map[token.TokenType]prefixParseFn
+	infixParseFns  map[token.TokenType]infixParseFn
 }
 
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
 		l:      l,
 		errors: []string{},
+
+		prefixParseFns: make(map[token.TokenType]prefixParseFn),
+		infixParseFns:  make(map[token.TokenType]infixParseFn),
 	}
+	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
+	p.infixParseFns = make(map[token.TokenType]infixParseFn)
+	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.nextToken()
 	p.nextToken()
 
 	return p
+}
+
+func (p *Parser) parseIdentifier() ast.Expression {
+	// Simply create an Identifier AST node with the current token's value.
+	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+}
+
+func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
+	p.prefixParseFns[tokenType] = fn
+}
+
+func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
+	p.infixParseFns[tokenType] = fn
 }
 
 func (p *Parser) Errors() []string {
@@ -59,8 +92,32 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseReturnStatement()
 
 	default:
+		return p.parseExpressionStatement()
+	}
+}
+
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	stmt := &ast.ExpressionStatement{Token: p.curToken}
+	stmt.Expression = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+	return stmt
+}
+
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.curToken.Type]
+	if prefix == nil {
+		p.noPrefixParseFnError(p.curToken.Type)
 		return nil
 	}
+	return prefix()
+}
+
+func (p *Parser) noPrefixParseFnError(t token.TokenType) {
+	msg := fmt.Sprintf("no prefix parse function for %s found", t)
+	p.errors = append(p.errors, msg)
 }
 
 func (p *Parser) parseLetStatement() *ast.LetStatement {
@@ -115,4 +172,8 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	return stmt
 }
 
+type (
+	prefixParseFn func() ast.Expression
 
+	infixParseFn func(leftExpression ast.Expression) ast.Expression
+)
