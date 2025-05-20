@@ -26,3 +26,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+
+# temp folder
+Donkey/
+
+class.png

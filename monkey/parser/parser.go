@@ -55,6 +55,9 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.LET:
 		return p.parseLetStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
+
 	default:
 		return nil
 	}
@@ -97,9 +100,17 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 	return false
 }
 
-func (p *Parser) peekError(t token.TokenType){
-	msg := fmt.Sprintf("expect next token to be %s, got something wrong : %s",t,p.peekToken.Type)
+func (p *Parser) peekError(t token.TokenType) {
+	msg := fmt.Sprintf("expect next token to be %s, got something wrong : %s", t, p.peekToken.Type)
 	p.errors = append(p.errors, msg)
 }
 
-
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
+	stmt := &ast.ReturnStatement{Token: p.curToken} //curToken is RETURN
+	p.nextToken()
+	// TODO: We're skipping the expression parsing until we know how.
+	for p.curToken.Type != token.SEMICOLON && p.curToken.Type != token.EOF {
+		p.nextToken()
+	}
+	return stmt
+}
