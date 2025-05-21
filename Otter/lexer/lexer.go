@@ -4,6 +4,10 @@ import (
 	"github.com/r-priyanshu/interpreter/token"
 )
 
+//
+// -------------------- Lexer Struct and Constructor --------------------
+//
+
 type Lexer struct {
 	input        string
 	position     int  // current position in input (points to current char)
@@ -17,6 +21,10 @@ func New(input string) *Lexer {
 	return l
 }
 
+//
+// -------------------- Character Reading Helpers --------------------
+//
+
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
@@ -26,6 +34,17 @@ func (l *Lexer) readChar() {
 	l.position = l.readPosition
 	l.readPosition += 1
 }
+
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	}
+	return l.input[l.readPosition]
+}
+
+//
+// -------------------- Tokenization Core --------------------
+//
 
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
@@ -42,7 +61,6 @@ func (l *Lexer) NextToken() token.Token {
 		} else {
 			tok = newToken(token.ASSIGN, l.ch)
 		}
-
 	case ';':
 		tok = newToken(token.SEMICOLON, l.ch)
 	case '(':
@@ -103,13 +121,22 @@ func (l *Lexer) NextToken() token.Token {
 			tok = newToken(token.ILLEGAL, l.ch)
 		}
 	}
+
 	l.readChar()
 	return tok
 }
 
+//
+// -------------------- Token Construction Helpers --------------------
+//
+
 func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
+
+//
+// -------------------- Scanners for Identifiers and Numbers --------------------
+//
 
 func (l *Lexer) readIdentifier() string {
 	position := l.position
@@ -127,18 +154,19 @@ func (l *Lexer) readNumber() string {
 	return l.input[position:l.position]
 }
 
+//
+// -------------------- Utility: Whitespace Skipping --------------------
+//
+
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
 	}
 }
 
-func (l *Lexer) peekChar() byte {
-	if l.readPosition >= len(l.input) {
-		return 0
-	}
-	return l.input[l.readPosition]
-}
+//
+// -------------------- Character Classification --------------------
+//
 
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
