@@ -1,4 +1,6 @@
-![Otter Language Logo](images/otter.png "The Otter Programming Language")
+<p align="center">
+  <img src="images/otter.png" alt="Otter Language Logo" title="The Otter Programming Language" width="200"/>
+</p>
 
 # Otter 🦦 - A Learning Interpreter in Go
 
