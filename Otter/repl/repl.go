@@ -6,17 +6,55 @@ import (
 
 	"io"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/r-priyanshu/interpreter/lexer"
 	"github.com/r-priyanshu/interpreter/parser"
 )
 
-const PROMPT = ">> "
+const OTTER_FACE = `
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣠⣤⣤⣤⣴⣶⣶⣶⣦⣤⣤⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣶⡾⠿⠛⠛⠋⠉⠉⠉⠉⠉⠉⡉⠉⠉⠉⠛⠛⠿⢷⣶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣴⡿⠟⠋⠁⠀⢀⡀⠀⠀⢰⡆⠀⠀⠀⢸⡇⠀⠀⠀⣀⠀⠀⠀⠈⠙⠻⢿⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⡿⠛⠁⠀⠀⠀⠀⠀⢸⣿⠀⠀⢸⡇⠀⠀⠀⢸⡇⠀⠀⠀⣿⡆⠀⠀⠀⠀⠀⠀⠉⠻⢷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢀⣠⣴⣶⠟⠋⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠀⠀⢸⡇⠀⠀⠀⢸⡇⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠿⣶⣦⣄⡀⠀⠀⠀⠀
+⠀⠀⢠⣾⠿⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠛⠀⠀⠸⡧⠀⠀⠀⠘⠃⠀⠀⠀⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⢿⣷⡄⠀⠀
+⠀⠀⢻⣿⣶⣶⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣶⣶⣿⠏⠀⠀
+⠀⠀⠀⠙⠿⣷⣾⡇⠀⠀⠀⠀⠀⠀⢀⣤⣤⣄⠀⠀⠀⠀⠀⠀⠀⠉⠘⠃⠀⠀⠀⠀⠀⠀⢀⣤⣦⣤⡀⠀⠀⠀⠀⠀⠀⢻⣷⣾⠟⠋⠀⠀⠀
+⠀⠀⠀⠀⠀⣸⡿⠁⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⡧⠀⠀⠀⠰⣶⣶⣾⣾⣷⣶⣶⠄⠀⠀⠀⣿⣿⣿⣿⡷⠀⠀⠀⠀⠀⠀⠈⣿⣇⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⣰⡿⠁⠀⠀⠀⠀⠀⠀⠀⠙⠻⠟⠛⠁⠀⠀⠀⠀⠈⠛⠻⣿⠟⠋⠀⠀⠀⠀⠀⠙⠛⠛⠛⠁⠀⠀⠀⠀⠀⠀⠀⠘⣿⡄⠀⠀⠀⠀
+⠀⠀⠀⣰⣿⠷⠶⠖⠒⠲⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠶⠶⠶⠶⣿⣿⣦⠀⠀⠀
+⢀⡴⠿⣿⡏⠀⠀⢀⣠⣤⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣶⡿⠿⢿⣶⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣀⡀⠀⠀⠀⢹⣿⡟⢦⡀
+⠉⠀⠸⣿⣇⣤⡾⠛⢉⣠⣶⣤⡀⠀⠀⠀⠀⠀⠀⠀⢠⣴⣿⠟⠁⠀⠀⠀⠈⠛⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⣠⣤⡀⠉⠛⠷⣦⣄⣸⣿⡇⠀⠈
+⠀⠀⠀⣿⣿⡋⠀⠀⣿⣿⡿⠙⠻⢶⣦⣄⠀⠀⠀⠀⠈⠙⣿⣆⠀⠀⠀⠀⠀⣰⡿⠉⠁⠀⠀⠀⢀⣠⣴⡾⠋⢿⣿⣷⠀⠀⠈⢙⣿⣿⡇⠀⠀
+⠀⢀⣾⠛⣿⣷⡀⠀⢿⣧⠀⠀⠀⠀⠀⠙⢷⣄⠀⠀⠀⠀⠘⣿⣆⣀⣀⣀⣰⡿⠁⠀⠀⠀⠀⣰⡿⠋⠁⠀⠀⠈⢹⣿⠀⠀⢀⣾⣿⠛⣷⠀⠀
+⠀⠸⠁⠀⠈⣿⣿⣶⣼⣿⣇⠀⠀⠀⠀⠀⠈⢿⣆⠀⠀⠀⠀⠀⠙⠛⠋⠛⠋⠀⠀⠀⠀⢀⣾⠟⠀⠀⠀⠀⠀⢀⣿⡏⢀⣤⣾⣟⠁⠀⠈⠇⠀
+⠀⠀⠀⠀⠀⣿⡇⠉⠻⣿⡿⠀⠀⠀⠀⠀⠀⠘⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⡏⠀⠀⠀⠀⠀⠀⢸⣿⣶⡿⠛⢻⣿⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢠⣿⡇⠀⣸⣿⠁⠀⠀⠀⠀⠀⠀⠀⢹⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⠀⠀⠀⠀⠀⠀⠀⠘⣿⣏⠀⠀⢸⣿⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢸⣿⠀⠐⠿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠹⣿⠆⠀⠈⣿⡆⠀⠀⠀⠀
+⠀⠀⠀⠀⣾⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣷⠀⠀⠀⠀
+⠀⠀⠀⢰⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⡆⠀⠀⠀
+⠀⠀⠀⣼⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣧⠀⠀⠀
+⠀⠀⢰⣿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠰⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⠿⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⡄⠀⠀
+⠀⠀⣼⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀
+⠀⠀⣿⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀
+⠀⠀⢿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⡷⠀⠀
+`
+
+const PROMPT = " ⫸⫸ "
+
+var (
+	promptStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color(""))
+	errorStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("9"))
+	otterStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
+	outputStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
+	labelStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("13"))
+)
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 
 	for {
-		fmt.Fprint(out, PROMPT)
+		fmt.Fprint(out, promptStyle.Render(PROMPT))
 		scanned := scanner.Scan()
 		if !scanned {
 			return
@@ -32,16 +70,16 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, program.String())
-		io.WriteString(out, "\n")
-
+		io.WriteString(out, outputStyle.Render(program.String())+"\n")
 	}
 }
 
 func printParserErrors(out io.Writer, errors []string) {
-	io.WriteString(out, "Woops! We ran into some otter business here!\n")
-	io.WriteString(out, " parser errors:\n")
+	io.WriteString(out, otterStyle.Render(OTTER_FACE)+"\n")
+	io.WriteString(out, labelStyle.Render(" otter says:")+"\n\n")
+
 	for _, msg := range errors {
-		io.WriteString(out, "\t"+msg+"\n")
+		formatted := errorStyle.Render("  ✦ " + msg)
+		io.WriteString(out, formatted+"\n")
 	}
 }
