@@ -7,16 +7,13 @@ type Token struct {
 	Literal string
 }
 
-// 1.2 Defining Tokens
 const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 
-	//Identifiers + literals
 	IDENT = "IDENT"
 	INT   = "INT"
 
-	//Operators
 	ASSIGN   = "="
 	PLUS     = "+"
 	MINUS    = "-"
@@ -26,7 +23,6 @@ const (
 	LT       = "<"
 	GT       = ">"
 
-	//Delimiters
 	COMMA     = ","
 	SEMICOLON = ";"
 
@@ -35,7 +31,6 @@ const (
 	LBRACE = "{"
 	RBRACE = "}"
 
-	//Keywords
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
 	TRUE     = "TRUE"
@@ -44,7 +39,6 @@ const (
 	ELSE     = "ELSE"
 	RETURN   = "RETURN"
 
-	// Comparison Operator
 	EQ     = "=="
 	NOT_EQ = "!="
 	LT_EQ  = "<="

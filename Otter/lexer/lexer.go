@@ -4,15 +4,11 @@ import (
 	"github.com/r-priyanshu/interpreter/token"
 )
 
-//
-// -------------------- Lexer Struct and Constructor --------------------
-//
-
 type Lexer struct {
 	input        string
-	position     int  // current position in input (points to current char)
-	readPosition int  // current reading position in input (after current char)
-	ch           byte // current char under examination
+	position     int
+	readPosition int
+	ch           byte
 }
 
 func New(input string) *Lexer {
@@ -20,10 +16,6 @@ func New(input string) *Lexer {
 	l.readChar()
 	return l
 }
-
-//
-// -------------------- Character Reading Helpers --------------------
-//
 
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
@@ -41,10 +33,6 @@ func (l *Lexer) peekChar() byte {
 	}
 	return l.input[l.readPosition]
 }
-
-//
-// -------------------- Tokenization Core --------------------
-//
 
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
@@ -126,17 +114,9 @@ func (l *Lexer) NextToken() token.Token {
 	return tok
 }
 
-//
-// -------------------- Token Construction Helpers --------------------
-//
-
 func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
-
-//
-// -------------------- Scanners for Identifiers and Numbers --------------------
-//
 
 func (l *Lexer) readIdentifier() string {
 	position := l.position
@@ -154,19 +134,11 @@ func (l *Lexer) readNumber() string {
 	return l.input[position:l.position]
 }
 
-//
-// -------------------- Utility: Whitespace Skipping --------------------
-//
-
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
 	}
 }
-
-//
-// -------------------- Character Classification --------------------
-//
 
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'

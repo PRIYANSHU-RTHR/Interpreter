@@ -30,8 +30,6 @@ func TestConditionals(t *testing.T) {
 		expectedLiteral string
 	}{
 
-		// {token.LET, "let"},
-		// {token.IDENT, "result"},
 		{token.BANG, "!"},
 		{token.MINUS, "-"},
 		{token.SLASH, "/"},
