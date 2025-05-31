@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/r-priyanshu/interpreter/evaluator"
 	"github.com/r-priyanshu/interpreter/lexer"
 	"github.com/r-priyanshu/interpreter/parser"
 )
@@ -52,6 +53,7 @@ var (
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	// env := object.NewEnvironment() // Environment for the REPL session
 
 	for {
 		fmt.Fprint(out, promptStyle.Render(PROMPT))
@@ -70,7 +72,11 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, outputStyle.Render(program.String())+"\n")
+		evaluated := evaluator.Eval(program)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }
 
