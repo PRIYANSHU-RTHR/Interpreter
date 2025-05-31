@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/r-priyanshu/interpreter/evaluator"
 	"github.com/r-priyanshu/interpreter/lexer"
+	"github.com/r-priyanshu/interpreter/object"
 	"github.com/r-priyanshu/interpreter/parser"
 )
 
@@ -41,7 +42,7 @@ const OTTER_FACE = `
 ⠀⠀⢿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⡷⠀⠀
 `
 
-const PROMPT = " ⫸⫸ "
+const PROMPT = "⫸⫸ "
 
 var (
 	promptStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color(""))
@@ -53,7 +54,7 @@ var (
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
-	// env := object.NewEnvironment() // Environment for the REPL session
+	env := object.NewEnvironment()
 
 	for {
 		fmt.Fprint(out, promptStyle.Render(PROMPT))
@@ -63,6 +64,10 @@ func Start(in io.Reader, out io.Writer) {
 		}
 
 		line := scanner.Text()
+		if line == "exit" {
+			return
+		}
+
 		l := lexer.New(line)
 		p := parser.New(l)
 		program := p.ParseProgram()
@@ -72,7 +77,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluated := evaluator.Eval(program)
+		evaluated := evaluator.Eval(program, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")

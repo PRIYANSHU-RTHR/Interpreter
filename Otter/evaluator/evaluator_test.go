@@ -12,7 +12,8 @@ func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
-	return Eval(program)
+	env := object.NewEnvironment()
+	return Eval(program, env)
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
@@ -137,19 +138,19 @@ func TestIfElseExpressions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{"if (true) { 10 }", 10},
+		{"if (true) { 10 }", int64(10)},
 		{"if (false) { 10 }", nil},
-		{"if (1) { 10 }", 10},
-		{"if (1 < 2) { 10 }", 10},
+		{"if (1) { 10 }", int64(10)},
+		{"if (1 < 2) { 10 }", int64(10)},
 		{"if (1 > 2) { 10 }", nil},
-		{"if (1 > 2) { 10 } else { 20 }", 20},
-		{"if (1 < 2) { 10 } else { 20 }", 10},
+		{"if (1 > 2) { 10 } else { 20 }", int64(20)},
+		{"if (1 < 2) { 10 } else { 20 }", int64(10)},
 
-		{"if (true) { 10; 11; 12 }", 12},
-		{"if (false) { 10 } else { 20; 21; 22 }", 22},
+		{"if (true) { 10; 11; 12 }", int64(12)},
+		{"if (false) { 10 } else { 20; 21; 22 }", int64(22)},
 
-		{"if (0) { 10 }", 10},
-		{"if (0) { 10 } else { 20 }", 10},
+		{"if (0) { 10 }", int64(10)},
+		{"if (0) { 10 } else { 20 }", int64(10)},
 	}
 
 	for _, tt := range tests {
@@ -180,7 +181,7 @@ func TestReturnStatements(t *testing.T) {
 				if (10 > 1) {
 				return 10;
 				}
-				return 1; // Should not be reached
+				return 1; 
 			}
 		`, 10,
 		},
@@ -202,7 +203,7 @@ func TestErrorHandling(t *testing.T) {
 			"type mismatch: INTEGER + BOOLEAN",
 		},
 		{
-			"5 + true; 5;", 
+			"5 + true; 5;",
 			"type mismatch: INTEGER + BOOLEAN",
 		},
 		{
@@ -218,21 +219,28 @@ func TestErrorHandling(t *testing.T) {
 			"unknown operator: BOOLEAN + BOOLEAN",
 		},
 		{
-			"if (10 > 1) { true + false; }", 
+			"if (10 > 1) { true + false; }",
 			"unknown operator: BOOLEAN + BOOLEAN",
 		},
 		{
 			`
-                    if (10 > 1) {
-                      if (10 > 1) {
-                        return true + false; // Error in nested return
-                      }
-                      return 1;
-                    }
-                    `,
+			if (10 > 1) {
+				if (10 > 1) {
+				return true + false;
+				}
+				return 1;
+			}
+			`,
 			"unknown operator: BOOLEAN + BOOLEAN",
 		},
-		
+		{
+			"foobar;",
+			"identifier not found: foobar",
+		},
+		{
+			"let a = 1; b;",
+			"identifier not found: b",
+		},
 	}
 
 	for _, tt := range tests {
@@ -247,5 +255,21 @@ func TestErrorHandling(t *testing.T) {
 			t.Errorf("wrong error message. expected=%q, got=%q",
 				tt.expectedMessage, errObj.Message)
 		}
+	}
+}
+
+func TestLetStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let a = 5; a;", 5},
+		{"let a = 5 * 5; a;", 25},
+		{"let a = 5; let b = a; b;", 5},
+		{"let a = 5; let b = a; let c = a + b + 5; c;", 15},
+	}
+
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
 	}
 }
