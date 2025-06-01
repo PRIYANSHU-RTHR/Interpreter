@@ -72,6 +72,8 @@ OuterLoop:
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+	case ':': 
+		tok = newToken(token.COLON, l.ch)
 	case '-':
 		tok = newToken(token.MINUS, l.ch)
 	case '*':
@@ -102,9 +104,9 @@ OuterLoop:
 		} else {
 			tok = newToken(token.GT, l.ch)
 		}
-	case '[': 
+	case '[':
 		tok = newToken(token.LBRACKET, l.ch)
-	case ']': 
+	case ']':
 		tok = newToken(token.RBRACKET, l.ch)
 	case '"':
 		tok.Type = token.STRING
