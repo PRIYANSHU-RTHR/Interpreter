@@ -144,8 +144,8 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 func evalInfixExpression(operator string, left, right object.Object) object.Object {
 	if left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ {
 		return evalIntegerInfixExpression(operator, left, right)
-	} else if left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ { 
-		return evalStringInfixExpression(operator, left, right) 
+	} else if left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ {
+		return evalStringInfixExpression(operator, left, right)
 	}
 
 	if operator == "==" {
@@ -260,14 +260,14 @@ func isError(obj object.Object) bool {
 }
 
 func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
-	if env == nil {
-		return newError("internal error: environment is nil for identifier %s", node.Value)
+	if val, ok := env.Get(node.Value); ok {
+		return val
 	}
-	val, ok := env.Get(node.Value)
-	if !ok {
-		return newError("identifier not found: %s", node.Value)
+	if builtin, ok := builtins[node.Value]; ok {
+		return builtin
 	}
-	return val
+
+	return newError("identifier not found: %s", node.Value)
 }
 
 func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
@@ -283,21 +283,19 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Ob
 }
 
 func applyFunction(fn object.Object, args []object.Object) object.Object {
-
 	switch fn := fn.(type) {
 	case *object.Function:
-
 		extendedEnv := extendFunctionEnv(fn, args)
-
 		evaluated := Eval(fn.Body, extendedEnv)
-
 		return unwrapReturnValue(evaluated)
+
+	case *object.Builtin:
+		return fn.Fn(args...)
 
 	default:
 		return newError("not a function: %s", fn.Type())
 	}
 }
-
 func extendFunctionEnv(fn *object.Function, args []object.Object) *object.Environment {
 
 	env := object.NewEnclosedEnvironment(fn.Env)
@@ -320,7 +318,7 @@ func unwrapReturnValue(obj object.Object) object.Object {
 }
 
 func evalStringInfixExpression(operator string, left, right object.Object) object.Object {
-	if operator != "+" { 
+	if operator != "+" {
 		return newError("unknown operator: %s %s %s",
 			left.Type(), operator, right.Type())
 	}

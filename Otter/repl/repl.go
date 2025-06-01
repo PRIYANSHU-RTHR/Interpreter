@@ -45,7 +45,7 @@ const OTTER_FACE = `
 const PROMPT = "⫸⫸ "
 
 var (
-	promptStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("206 "))
+	promptStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("206"))
 	errorStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("9"))
 	otterStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 	outputStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
