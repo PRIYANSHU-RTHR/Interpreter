@@ -255,6 +255,9 @@ func isError(obj object.Object) bool {
 }
 
 func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
+	if env == nil {
+		return newError("internal error: environment is nil for identifier %s", node.Value)
+	}
 	val, ok := env.Get(node.Value)
 	if !ok {
 		return newError("identifier not found: %s", node.Value)

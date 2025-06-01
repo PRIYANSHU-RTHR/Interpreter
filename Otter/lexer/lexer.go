@@ -37,7 +37,16 @@ func (l *Lexer) peekChar() byte {
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
-	l.skipWhitespace()
+OuterLoop:
+	for {
+		l.skipWhitespaceOnly()
+
+		if l.ch == '/' && l.peekChar() == '/' {
+			l.skipLineComment()
+			continue OuterLoop 
+		}
+		break
+	}
 
 	switch l.ch {
 	case '=':
@@ -114,13 +123,26 @@ func (l *Lexer) NextToken() token.Token {
 	return tok
 }
 
+func (l *Lexer) skipWhitespaceOnly() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		l.readChar()
+	}
+}
+
+// New helper to skip a line comment
+func (l *Lexer) skipLineComment() {
+	for l.ch != '\n' && l.ch != 0 {
+		l.readChar()
+	}
+}
+
 func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
 
 func (l *Lexer) readIdentifier() string {
 	position := l.position
-	for isLetter(l.ch) {
+	for isLetter(l.ch) || isDigit(l.ch) { 
 		l.readChar()
 	}
 	return l.input[position:l.position]
@@ -135,8 +157,24 @@ func (l *Lexer) readNumber() string {
 }
 
 func (l *Lexer) skipWhitespace() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
-		l.readChar()
+	for {
+		l.ch = l.input[l.readPosition]
+		if l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+			l.readChar()
+		} else if l.ch == '/' && l.peekChar() == '/' {
+
+			for l.ch != '\n' && l.ch != 0 {
+				l.readChar()
+			}
+
+		} else {
+			break
+		}
+
+		if l.readPosition >= len(l.input) {
+			l.ch = 0
+			break
+		}
 	}
 }
 

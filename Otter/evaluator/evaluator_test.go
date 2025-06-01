@@ -12,10 +12,10 @@ func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
+
 	env := object.NewEnvironment()
 	return Eval(program, env)
 }
-
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	t.Helper()
 	result, ok := obj.(*object.Integer)
@@ -326,4 +326,20 @@ func TestClosures(t *testing.T) {
             add5(2) + add10(3); // (5+2) + (10+3) = 7 + 13 = 20
             `
 	testIntegerObject(t, testEval(input2), 20)
+}
+
+func TestSequentialLetsWithCall(t *testing.T) {
+	input := `
+    let first = 10;
+    let second = first(5); // This is intentionally a call on an integer for parser testing
+    `
+	
+	l := lexer.New(input)
+	p := parser.New(l)
+	program := p.ParseProgram()
+
+	if len(program.Statements) != 2 {
+		t.Fatalf("Expected 2 statements, got %d", len(program.Statements))
+	}
+
 }
