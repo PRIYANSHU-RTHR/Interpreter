@@ -408,6 +408,10 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`push([1, 2], 3)`, "[1, 2, 3]"},
 		{`push([], 1)`, "[1]"},
 		{`push(1, 1)`, "first argument to `push` must be ARRAY, got INTEGER"},
+
+		{`puts("hello", "world")`, nil}, 
+		{`puts(1,2,3)`, nil},
+		{`let x = puts("test"); x`, nil},
 	}
 
 	for _, tt := range tests {

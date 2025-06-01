@@ -1,6 +1,10 @@
 package evaluator
 
-import "github.com/r-priyanshu/interpreter/object"
+import (
+	"fmt"
+
+	"github.com/r-priyanshu/interpreter/object"
+)
 
 var builtins = map[string]*object.Builtin{
 	"len": {
@@ -71,9 +75,9 @@ var builtins = map[string]*object.Builtin{
 			return NULL
 		},
 	},
-	"push": { 
+	"push": {
 		Fn: func(args ...object.Object) object.Object {
-			if len(args) != 2 { 
+			if len(args) != 2 {
 				return newError("wrong number of arguments. got=%d, want=2", len(args))
 			}
 			if args[0].Type() != object.ARRAY_OBJ {
@@ -81,7 +85,7 @@ var builtins = map[string]*object.Builtin{
 			}
 
 			arr := args[0].(*object.Array)
-			element := args[1] 
+			element := args[1]
 
 			length := len(arr.Elements)
 			newElements := make([]object.Object, length+1)
@@ -89,6 +93,14 @@ var builtins = map[string]*object.Builtin{
 			newElements[length] = element
 
 			return &object.Array{Elements: newElements}
+		},
+	},
+	"puts": {
+		Fn: func(args ...object.Object) object.Object {
+			for _, arg := range args {
+				fmt.Println(arg.Inspect())
+			}
+			return NULL
 		},
 	},
 }
