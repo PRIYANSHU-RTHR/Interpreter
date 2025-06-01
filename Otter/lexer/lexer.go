@@ -102,10 +102,14 @@ OuterLoop:
 		} else {
 			tok = newToken(token.GT, l.ch)
 		}
+	case '[': 
+		tok = newToken(token.LBRACKET, l.ch)
+	case ']': 
+		tok = newToken(token.RBRACKET, l.ch)
 	case '"':
 		tok.Type = token.STRING
 		tok.Literal = l.readStringContent()
-		
+
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -133,7 +137,6 @@ func (l *Lexer) skipWhitespaceOnly() {
 		l.readChar()
 	}
 }
-
 
 func (l *Lexer) skipLineComment() {
 	for l.ch != '\n' && l.ch != 0 {

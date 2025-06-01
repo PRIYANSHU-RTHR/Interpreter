@@ -11,9 +11,9 @@ const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 
-	IDENT = "IDENT"
-	INT   = "INT"
-	STRING = "STRING" 
+	IDENT  = "IDENT"
+	INT    = "INT"
+	STRING = "STRING"
 
 	ASSIGN   = "="
 	PLUS     = "+"
@@ -44,6 +44,9 @@ const (
 	NOT_EQ = "!="
 	LT_EQ  = "<="
 	GT_EQ  = ">="
+
+	LBRACKET = "["
+	RBRACKET = "]"
 )
 
 var keywords = map[string]TokenType{
