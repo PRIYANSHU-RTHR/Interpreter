@@ -22,6 +22,8 @@ func TestConditionals(t *testing.T) {
 
 	7<=9;
 	10>=9;
+	"foobar"
+	"foo bar"
 
 	`
 
@@ -81,8 +83,11 @@ func TestConditionals(t *testing.T) {
 		{token.GT_EQ, ">="},
 		{token.INT, "9"},
 		{token.SEMICOLON, ";"},
+		{token.STRING, "foobar"},
+		{token.STRING, "foo bar"},
 
 		{token.EOF, ""},
+
 	}
 
 	l := New(input)

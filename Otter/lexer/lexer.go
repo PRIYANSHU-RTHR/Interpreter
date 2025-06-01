@@ -43,7 +43,7 @@ OuterLoop:
 
 		if l.ch == '/' && l.peekChar() == '/' {
 			l.skipLineComment()
-			continue OuterLoop 
+			continue OuterLoop
 		}
 		break
 	}
@@ -102,9 +102,14 @@ OuterLoop:
 		} else {
 			tok = newToken(token.GT, l.ch)
 		}
+	case '"':
+		tok.Type = token.STRING
+		tok.Literal = l.readStringContent()
+		
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
+		return tok
 	default:
 		if isLetter(l.ch) {
 			tok.Literal = l.readIdentifier()
@@ -129,7 +134,7 @@ func (l *Lexer) skipWhitespaceOnly() {
 	}
 }
 
-// New helper to skip a line comment
+
 func (l *Lexer) skipLineComment() {
 	for l.ch != '\n' && l.ch != 0 {
 		l.readChar()
@@ -142,7 +147,7 @@ func newToken(tokenType token.TokenType, ch byte) token.Token {
 
 func (l *Lexer) readIdentifier() string {
 	position := l.position
-	for isLetter(l.ch) || isDigit(l.ch) { 
+	for isLetter(l.ch) || isDigit(l.ch) {
 		l.readChar()
 	}
 	return l.input[position:l.position]
@@ -184,4 +189,15 @@ func isLetter(ch byte) bool {
 
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
+}
+func (l *Lexer) readStringContent() string {
+	startPosition := l.position + 1
+	for {
+		l.readChar()
+		if l.ch == '"' || l.ch == 0 {
+			break
+		}
+	}
+	content := l.input[startPosition:l.position]
+	return content
 }

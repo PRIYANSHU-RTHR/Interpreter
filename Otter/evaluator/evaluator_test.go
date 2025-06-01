@@ -333,7 +333,7 @@ func TestSequentialLetsWithCall(t *testing.T) {
     let first = 10;
     let second = first(5); // This is intentionally a call on an integer for parser testing
     `
-	
+
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
@@ -342,4 +342,31 @@ func TestSequentialLetsWithCall(t *testing.T) {
 		t.Fatalf("Expected 2 statements, got %d", len(program.Statements))
 	}
 
+}
+
+func testStringObject(t *testing.T, obj object.Object, expected string) bool {
+	t.Helper()
+	result, ok := obj.(*object.String)
+	if !ok {
+		t.Errorf("object is not String. got=%T (%+v)", obj, obj)
+		return false
+	}
+	if result.Value != expected {
+		t.Errorf("object.Value has wrong value. got=%q, want=%q",
+			result.Value, expected)
+		return false
+	}
+	return true
+}
+
+func TestEvalStringLiteral(t *testing.T) {
+	input := `"Hello World!"`
+	evaluated := testEval(input) 
+	testStringObject(t, evaluated, "Hello World!")
+}
+
+func TestStringConcatenation(t *testing.T) {
+	input := `"Hello" + " " + "World!"`
+	evaluated := testEval(input)
+	testStringObject(t, evaluated, "Hello World!")
 }
