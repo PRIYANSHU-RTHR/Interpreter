@@ -379,12 +379,35 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len("")`, int64(0)},
 		{`len("four")`, int64(4)},
 		{`len("hello world")`, int64(11)},
-	
+
 		{`len(1)`, "argument to `len` not supported, got INTEGER"},
-		
+
 		{`len("one", "two")`, "wrong number of arguments. got=2, want=1"},
 
 		{`let s = "hello"; len(s)`, int64(5)},
+
+		{`len([1, 2, 3])`, int64(3)},
+		{`len([])`, int64(0)},
+		{`let a = [1,2]; len(a)`, int64(2)},
+
+		{`first([1, 2, 3])`, int64(1)},
+		{`first([])`, nil},
+		{`first(1)`, "argument to `first` must be ARRAY, got INTEGER"},
+		{`let a = [100]; first(a)`, int64(100)},
+
+		{`last([1, 2, 3])`, int64(3)},
+		{`last([])`, nil},
+		{`last(1)`, "argument to `last` must be ARRAY, got INTEGER"},
+		{`let a = [100, 200]; last(a)`, int64(200)},
+
+		{`rest([1, 2, 3])`, "[2, 3]"},
+		{`rest([1])`, "[]"},
+		{`rest([])`, nil},
+		{`rest(1)`, "argument to `rest` must be ARRAY, got INTEGER"},
+
+		{`push([1, 2], 3)`, "[1, 2, 3]"},
+		{`push([], 1)`, "[1]"},
+		{`push(1, 1)`, "first argument to `push` must be ARRAY, got INTEGER"},
 	}
 
 	for _, tt := range tests {
@@ -393,17 +416,23 @@ func TestBuiltinFunctions(t *testing.T) {
 		switch expected := tt.expected.(type) {
 		case int64:
 			testIntegerObject(t, evaluated, expected)
+		case nil:
+			testNullObject(t, evaluated)
 		case string:
-			errObj, ok := evaluated.(*object.Error)
-			if !ok {
-				t.Errorf("object is not Error. got=%T (%+v)",
-					evaluated, evaluated)
-				continue
+			errObj, isErr := evaluated.(*object.Error)
+			if isErr {
+				if errObj.Message != expected {
+					t.Errorf("wrong error message. expected=%q, got=%q",
+						expected, errObj.Message)
+				}
+			} else {
+				if evaluated.Inspect() != expected {
+					t.Errorf("object.Inspect() wrong. expected=%q, got=%q. (Actual object: %T %+v)",
+						expected, evaluated.Inspect(), evaluated, evaluated)
+				}
 			}
-			if errObj.Message != expected {
-				t.Errorf("wrong error message. expected=%q, got=%q",
-					expected, errObj.Message)
-			}
+		default:
+			t.Errorf("unhandled type for expected value: %T", tt.expected)
 		}
 	}
 }
@@ -439,7 +468,7 @@ func TestArrayIndexExpressions(t *testing.T) {
 		{"let myArray = [1, 2, 3]; myArray[2];", int64(3)},
 		{"let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", int64(6)},
 		{"let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i];", int64(2)},
-		
+
 		{"[1, 2, 3][3]", nil},
 		{"[1, 2, 3][-1]", nil},
 	}
