@@ -374,16 +374,16 @@ func TestStringConcatenation(t *testing.T) {
 func TestBuiltinFunctions(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected interface{} 
+		expected interface{}
 	}{
 		{`len("")`, int64(0)},
 		{`len("four")`, int64(4)},
 		{`len("hello world")`, int64(11)},
-		// Error case: wrong type
+	
 		{`len(1)`, "argument to `len` not supported, got INTEGER"},
-		// Error case: wrong number of arguments
+		
 		{`len("one", "two")`, "wrong number of arguments. got=2, want=1"},
-		// Test len with a variable
+
 		{`let s = "hello"; len(s)`, int64(5)},
 	}
 
@@ -393,7 +393,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		switch expected := tt.expected.(type) {
 		case int64:
 			testIntegerObject(t, evaluated, expected)
-		case string: 
+		case string:
 			errObj, ok := evaluated.(*object.Error)
 			if !ok {
 				t.Errorf("object is not Error. got=%T (%+v)",
@@ -404,6 +404,53 @@ func TestBuiltinFunctions(t *testing.T) {
 				t.Errorf("wrong error message. expected=%q, got=%q",
 					expected, errObj.Message)
 			}
+		}
+	}
+}
+
+func TestArrayLiterals(t *testing.T) {
+	input := "[1, 2 * 2, 3 + 3]"
+	evaluated := testEval(input)
+
+	result, ok := evaluated.(*object.Array)
+	if !ok {
+		t.Fatalf("object is not Array. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	if len(result.Elements) != 3 {
+		t.Fatalf("array has wrong num of elements. got=%d", len(result.Elements))
+	}
+
+	testIntegerObject(t, result.Elements[0], 1)
+	testIntegerObject(t, result.Elements[1], 4)
+	testIntegerObject(t, result.Elements[2], 6)
+}
+
+func TestArrayIndexExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"[1, 2, 3][0]", int64(1)},
+		{"[1, 2, 3][1]", int64(2)},
+		{"[1, 2, 3][2]", int64(3)},
+		{"let i = 0; [1][i];", int64(1)},
+		{"[1, 2, 3][1 + 1];", int64(3)},
+		{"let myArray = [1, 2, 3]; myArray[2];", int64(3)},
+		{"let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", int64(6)},
+		{"let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i];", int64(2)},
+		
+		{"[1, 2, 3][3]", nil},
+		{"[1, 2, 3][-1]", nil},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		integer, ok := tt.expected.(int64)
+		if ok {
+			testIntegerObject(t, evaluated, integer)
+		} else {
+			testNullObject(t, evaluated)
 		}
 	}
 }
