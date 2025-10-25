@@ -28,7 +28,7 @@ Otter's syntax has a C-like feel, aiming for simplicity to explore core interpre
 This project was less about creating the next big language and more about the foundational learning:
 
 *   **Lexical Analysis (Lexing):** Turning raw text into a stream of recognizable "tokens."
-*   **Parsing (Syntactic Analysis):** Building an Abstract Syntax Tree (AST) to represent code structure. The Pratt parsing technique for expressions was a particularly enlightening part of this, an approach I familiarized myself with while working through materials like Thorsten Ball's "Writing An Interpreter In Go."
+*   **Parsing (Syntactic Analysis):** Building an Abstract Syntax Tree (AST) to represent code structure. The Pratt parsing technique for expressions was a particularly enlightening part of this, an approach I familiarized myself with while working through materials like Thorsten Ball's 
 *   **AST Design:** Defining Go interfaces and structs to model the language's grammar.
 *   **Evaluation/Interpretation:** Recursively walking the AST to execute code. Implementing **environments** for variable scoping and the mechanics of **closures** were key challenges and big learning milestones.
 *   **Error Handling:** Basic strategies for reporting issues from the lexer, parser, and evaluator.
