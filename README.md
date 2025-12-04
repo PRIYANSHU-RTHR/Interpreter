@@ -2,13 +2,13 @@
   <img src="images/otter.png" alt="Otter Language Logo" title="The Otter Programming Language" width="200"/>
 </p>
 
-# Otter 🦦 - A Learning Interpreter in Go
+# Otter - A Learning Interpreter in Go
 
 Welcome to Otter! This project documents my journey building a small programming language interpreter from scratch in Go. It's been an incredible exercise in understanding what happens under the hood when code runs.
 
 Otter's syntax has a C-like feel, aiming for simplicity to explore core interpreter concepts rather than full C compatibility.
 
-## ✨ Otter's Current Features (A Learner's Implementation)
+##  Otter's Current Features (A Learner's Implementation)
 
 *   **Basic Syntax:** `let` for variable bindings.
 *   **Data Types:** Integers, Booleans, Strings. Support for Arrays and Hashes (key-value maps) is also included.
@@ -23,7 +23,7 @@ Otter's syntax has a C-like feel, aiming for simplicity to explore core interpre
 
 *While functional for its learning purpose, Otter is a simplified language and not intended for production use.*
 
-## 🚀 Key Learnings & Implementation Insights
+##  Key Learnings & Implementation Insights
 
 This project was less about creating the next big language and more about the foundational learning:
 
@@ -34,7 +34,7 @@ This project was less about creating the next big language and more about the fo
 *   **Error Handling:** Basic strategies for reporting issues from the lexer, parser, and evaluator.
 *   **Internal Data Representation:** Designing Go structs for Otter's simple object system.
 
-## 🛠️ Get Started with Otter
+##  Get Started with Otter
 
 1.  Clone this repository.
 2.  In the project directory, run: `go run main.go`
@@ -50,7 +50,7 @@ null
 >>
 ```
 
-## 📂 Project Structure
+##  Project Structure
 
 *   `/token`: Defines Otter's lexical tokens.
 *   `/lexer`: The lexical analyzer.
